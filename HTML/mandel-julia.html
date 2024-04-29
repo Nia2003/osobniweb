@@ -1,0 +1,299 @@
+<html>
+<head>
+<title>Julia</title>
+</head>
+<body onload="draw();">
+    <h1>Zobrazení Mandelbrotovy a Juliových množin</h1>
+    Počet iterací u Mandelbrotovy množiny: <input type="text" id="maxIter" size="2" value=30 />
+    Počet iterací u Juliovy množiny: <input type="text" id="maxIterJ" size="2" value=250 />
+    Realna část konstanty: <input type="text" id="realna" value=0.086687 />
+    Imaginární část konstanty: <input type="text" id="imaginarni" value=0.6667 />
+</br>
+
+    <button onclick="draw;" style= "background-color: beige;">Upravit parametry pro všechna zobrazení</button>
+    <button onclick="randomColors(); draw();" style= "background-color: beige;">Změna obarvení</button> <br />
+    </br>
+    <button onclick="drawSet(testMandel);document.getElementById('popis').innerHTML='počet iterací: '+document.getElementById('maxIter').value;">1) Mandelbrotova množina s obarvením podle iterace</button> </br>
+    <span id="popis"></span></br>
+
+</br>
+    <button onclick="drawSet(testJulia);document.getElementById('popis1').innerHTML='počet iterací: '+document.getElementById('maxIterJ').value;document.getElementById('popisa1').innerHTML='realná složka: '+document.getElementById('realna').value;document.getElementById('popisb1').innerHTML='imaginární složka: '+document.getElementById('imaginarni').value">2) Juliova množina s obarvením podle iterace</button> </br>
+    <span id="popis1"></span><br />
+    <span id="popisa1"></span></br>
+    <span id="popisb1"></span></br>
+</br>
+    <button onclick="drawSet(testMandelfi);document.getElementById('popis2').innerHTML='počet iterací: '+document.getElementById('maxIter').value">3) Mandelbrotova množina s obarvením podle únikového úhlu</button> </br>
+    <span id="popis2"></span><br />
+
+</br>
+    <button onclick="drawSet(testJuliafi);document.getElementById('popis3').innerHTML='počet iterací: '+document.getElementById('maxIterJ').value;document.getElementById('popisa3').innerHTML='realná složka: '+document.getElementById('realna').value;document.getElementById('popisb3').innerHTML='imaginární složka: '+document.getElementById('imaginarni').value">4) Juliova množina s obarvením podle únikového úhlu</button> </br>
+    <span id="popis3"></span><br />
+    <span id="popisa3"></span></br>
+    <span id="popisb3"></span></br>
+</br>
+
+    <canvas id='fractal' width='500' height='500' style='border:1px solid black;width: 20%;'></canvas>
+    <canvas id='julia' width='500' height='500' style='border:1px solid black;width: 20%;'></canvas>
+    <canvas id='fractalfi' width='500' height='500' style='border:1px solid black;width: 20%;'></canvas>
+    <canvas id='juliafi' width='500' height='500' style='border:1px solid black;width: 20%;'></canvas>
+
+
+    <script type="text/javascript">
+
+        //jak kreslit do canvas
+        var image = document.getElementById("fractal");
+        var ctx = image.getContext("2d");
+
+        var image1 = document.getElementById("julia");
+        var ctx1 = image1.getContext("2d");
+
+        var imagefi = document.getElementById("fractalfi");
+        var ctx2 = imagefi.getContext("2d");
+
+        var image1fi = document.getElementById("juliafi");
+        var ctx3 = image1fi.getContext("2d");
+
+        //var maxIter = 20; //maximalni pocet iteraci, kdz si rekneme, ze uz to dal nejde
+        var maxIter = document.getElementById("maxIter").value;
+        var minRe = -2; //minimalni realna slozka
+        var maxRe = 0.75; //maximalni realna sloyka
+        var minIm = -1.32; //-..- i
+        var maxIm = minIm + (maxRe - minRe) * image.height / image.width;
+
+        var minReJ = -1.5; //minimalni realna slozka
+        var maxReJ = 1.5; //maximalni realna sloyka
+        var minImJ = -1.5; //-..- i
+        var maxImJ = minImJ + (maxReJ - minReJ) * image1.height / image1.width;
+
+        var c1r = 0;
+        var c1g = 0;
+        var c1b = 0;
+        var c2r = 0;
+        var c2g = 0;
+        var c2b = 0;
+        var c3r = 0;
+        var c3g = 0;
+        var c3b = 0;
+        var c4r = 0;
+        var c4g = 0;
+        var c4b = 0;
+
+        randomColors();
+
+        function randomColors() {
+            c1r = 122;//randomFromRange(0, 255);
+            c1g = 255;//randomFromRange(0, 255);
+            c1b = 166;//randomFromRange(0, 255);
+            c2r = 251;//randomFromRange(0, 255);
+            c2g = 55;//randomFromRange(0, 255);
+            c2b = 202;//randomFromRange(0, 255);
+            c3r = randomFromRange(0, 255);
+            c3g = randomFromRange(0, 255);
+            c3b = randomFromRange(0, 255);
+            c4r = randomFromRange(0, 255);
+            c4g = randomFromRange(0, 255);
+            c4b = randomFromRange(0, 255);
+        }
+
+        //vykreslení množin
+        function draw() {
+            drawSet(testJulia);
+            drawSet(testMandel);
+            drawSet(testMandelfi);
+            drawSet(testJuliafi);
+        }
+
+        //generování náhodných čísel
+        function randomFromRange(min, max) {
+            return (min + (max - min) * Math.random());
+        }
+
+        //vykreslí jeden bod
+        function setPixel(x, y, r, g, b, ctx2) {
+            ctx2.fillStyle = "rgba(" + r + "," + g + "," + b + ",1 )";
+            ctx2.fillRect(x, y, 1, 1);
+        }
+
+        //transformuje lineární transformací souřednice do komplexmí roviny
+        function transformX(x) {
+            return minRe + x * (maxRe - minRe) / image.width;
+        }
+
+        function transformY(y) {
+            return - ( minIm + y * (maxIm - minIm) / image.height);
+        }
+
+        function transformXJ(x) {
+            return minReJ + x * (maxReJ - minReJ) / image1.width;
+        }
+
+        function transformYJ(y) {
+            return - (minImJ + y * (maxImJ - minImJ) / image1.height);
+        }
+
+        //vykreslení množiny
+        function drawSet(fractalFunc) {
+            //veme výšku obrázku
+            var imgW = image.height;
+            //veme šířku obrázku
+            var imgH = image.width;
+
+            //vezme hodnotu iterací pro mand. nebo jul.
+            maxIter = document.getElementById("maxIter").value;
+            if (fractalFunc == testJulia)
+                maxIter = document.getElementById("maxIterJ").value;
+                if (fractalFunc == testJuliafi)
+                maxIter = document.getElementById("maxIterJ").value;
+
+            //vydělí 3 pro přechod barev
+            var n = maxIter / 3;
+
+            //načtení konstatnt pro jul. množinu
+            var c1 = parseFloat(document.getElementById("realna").value);
+            var c2 = parseFloat(document.getElementById("imaginarni").value);
+
+            //pro každý pixel vypočítá barvu
+            for (var y = 0; y < imgH; y++) {
+                for (var x = 0; x < imgW; x++) {
+
+                    //na začátku 0
+                    var color = 0;
+                    //pokud jul., tak transformujeme souřadnice pixelů do komplexní roviny, počítá hodnotu fraktálu v pixelu
+                    if (fractalFunc == testJulia || fractalFunc == testJuliafi) {
+                        color = fractalFunc(transformXJ(x), transformYJ(y), c1, c2)
+                    }
+                    //jinak transformuje pro Mandelbrot. množinu
+                    else color = fractalFunc(transformX(x), transformY(y), c1, c2);
+
+                    var r = 0;
+                    var g = 0;
+                    var b = 0;
+
+                    if (color == 0) {
+                        r = 0;
+                        g = 0;
+                        b = 0;
+                    }
+                    else if (color < n) {
+                        r = c1r + (c2r - c1r) / (n - 1) * (color - 1);
+                        g = c1g + (c2g - c1g) / (n - 1) * (color - 1);
+                        b = c1b + (c2b - c1b) / (n - 1) * (color - 1);
+                    }
+                    else if (color < 2 * n) {
+                        r = c2r + (c3r - c2r) / (n) * (color - n - 1);
+                        g = c2g + (c3g - c2g) / (n) * (color - n - 1);
+                        b = c2b + (c3b - c2b) / (n) * (color - n - 1);
+                    }
+
+                    else if (color < 3 * n) {
+                        r = c3r + (c4r - c3r) / (n + 1) * (color - n * 2);
+                        g = c3g + (c4g - c3g) / (n + 1) * (color - n * 2);
+                        b = c3b + (c4b - c3b) / (n + 1) * (color - n * 2);
+                    }
+
+                    //kam se to vykreslí, ctx-mand.; ctx1-jul
+                    var context = ctx;
+                    if (fractalFunc == testJulia) {
+                        context = ctx1;
+
+                        // console.log("julia");
+                    }
+                    if (fractalFunc == testMandelfi) {
+                        context = ctx2;
+                        
+                        // console.log("julia");
+                    }
+                    if (fractalFunc == testJuliafi) {
+                        context = ctx3;
+                        
+                        // console.log("julia");
+                    }
+
+                    //vykreslí pixel
+                    setPixel(x, y, r, g, b, context);
+                }
+            }
+        }
+         //samotný algoritmus pro mandelbrota
+        function testMandel(re, im, a, b) {
+            var c1 = re;
+            var c2 = im;
+            var xn = 0;
+            var yn = 0;
+            var it = 0;
+            var tmp = 0;
+
+            while (it < maxIter) {
+                tmp = xn * xn - yn * yn;
+                yn = 2.0 * xn * yn + c2;
+                xn = tmp + c1;
+                if (xn * xn + yn * yn > 4.0) break;
+                it++;
+            }
+            if (it == maxIter) it = 0; //pokud dosáhneme max. iterace, nastavíme na nulu (barva)
+            return it;
+            //if (it == maxIter) return 0;
+            //return Math.atan2(yn, xn) * maxIter / (2.0 * Math.PI) + maxIter / 2; //vypočítá úhel pro vybarvení
+        }
+        function testJulia(re, im, c1, c2) {
+            var xn = re;
+            var yn = im;
+            var it = 0;
+            var tmp = 0;
+
+            while (it < maxIter) {
+                tmp = xn * xn - yn * yn;
+                yn = 2.0 * xn * yn + c2;
+                xn = tmp + c1;
+                if (xn * xn + yn * yn > 4.0) break;
+                it++;
+            }
+            if (it == maxIter) it = 0;
+            return it;
+            //if (it == maxIter) return 0;
+
+            //return Math.atan2(yn, xn) * maxIter / (2.0 * Math.PI) + maxIter / 2;
+        }
+        function testMandelfi(re, im, a, b) {
+            var c1 = re;
+            var c2 = im;
+            var xn = 0;
+            var yn = 0;
+            var it = 0;
+            var tmp = 0;
+
+            while (it < maxIter) {
+                tmp = xn * xn - yn * yn;
+                yn = 2.0 * xn * yn + c2;
+                xn = tmp + c1;
+                if (xn * xn + yn * yn > 4.0) break;
+                it++;
+            }
+            if (it == maxIter) it = 0; //pokud dosáhneme max. iterace, nastavíme na nulu (barva)
+            //return it;
+            if (it == maxIter) return 0;
+            return Math.atan2(yn, xn) * maxIter / (2.0 * Math.PI) + maxIter / 2; //vypočítá úhel pro vybarvení
+        }
+        function testJuliafi(re, im, c1, c2) {
+            var xn = re;
+            var yn = im;
+            var it = 0;
+            var tmp = 0;
+
+            while (it < maxIter) {
+                tmp = xn * xn - yn * yn;
+                yn = 2.0 * xn * yn + c2;
+                xn = tmp + c1;
+                if (xn * xn + yn * yn > 4.0) break;
+                it++;
+            }
+            if (it == maxIter) it = 0;
+            //return it;
+            if (it == maxIter) return 0;
+            return Math.atan2(yn, xn) * maxIter / (2.0 * Math.PI) + maxIter / 2;
+        }
+
+    </script>
+
+</body>
+</html>
